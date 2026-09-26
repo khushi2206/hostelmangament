@@ -1,20 +1,21 @@
 import React from 'react';
 
 const StatusBadge = ({ status }) => {
-  let color = 'var(--text-light)';
-  let bg = '#f3f4f6';
+  let badgeClass = 'bg-secondary';
   
-  switch(status.toLowerCase()) {
+  switch(status?.toLowerCase()) {
     case 'approved': case 'resolved': case 'paid': case 'available':
-      color = 'var(--success)'; bg = '#d1fae5'; break;
-    case 'pending': case 'in progress': case 'partial':
-      color = 'var(--warning)'; bg = '#fef3c7'; break;
+      badgeClass = 'bg-success'; break;
+    case 'pending': case 'in progress': case 'partial': case 'requested': case 'washing':
+      badgeClass = 'bg-warning text-dark'; break;
     case 'rejected': case 'due': case 'full':
-      color = 'var(--danger)'; bg = '#fee2e2'; break;
+      badgeClass = 'bg-danger'; break;
+    case 'ready':
+      badgeClass = 'bg-info text-dark'; break;
   }
   
   return (
-    <span style={{ padding: '0.25rem 0.5rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: 500, color, backgroundColor: bg }}>
+    <span className={`badge rounded-pill ${badgeClass} px-3 py-2`}>
       {status}
     </span>
   );

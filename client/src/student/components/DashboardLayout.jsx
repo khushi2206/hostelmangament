@@ -5,11 +5,11 @@ import Sidebar from './Sidebar';
 
 const DashboardLayout = () => {
   return (
-    <div>
+    <div className="d-flex flex-column vh-100">
       <Navbar />
-      <div style={{ display: 'flex' }}>
+      <div className="d-flex flex-grow-1 overflow-hidden">
         <Sidebar />
-        <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', maxHeight: 'calc(100vh - 64px)' }}>
+        <main className="flex-grow-1 p-4 overflow-auto bg-light">
           <Outlet />
         </main>
       </div>

@@ -5,24 +5,32 @@ const Notices = () => {
   const [notices, setNotices] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/student/notices').then(res => setNotices(res.data)).catch(console.error);
+    axios.get('http://localhost:5001/api/student/notices').then(res => setNotices(res.data)).catch(console.error);
   }, []);
 
   return (
-    <div style={{ background: 'white', padding: '2rem', borderRadius: '8px' }}>
-      <h2>Notices</h2>
-      <div style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
-        {notices.map((n) => (
-          <div key={n.notice_id} style={{ padding: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0 }}>{n.title}</h3>
-              <span style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>{new Date(n.date).toLocaleDateString()}</span>
+    <div className="container-fluid py-2">
+      <div className="card shadow-sm border-0 p-4">
+        <h3 className="fw-bold mb-4">Hostel Notices</h3>
+        <div className="row g-4">
+          {notices.map((n) => (
+            <div className="col-12" key={n.notice_id}>
+              <div className="card h-100 border-start border-4 border-primary shadow-sm">
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h5 className="card-title fw-bold mb-0">{n.title}</h5>
+                    <span className="badge bg-light text-dark border">{new Date(n.date).toLocaleDateString()}</span>
+                  </div>
+                  <p className="card-text text-muted" style={{ whiteSpace: 'pre-wrap' }}>{n.description}</p>
+                </div>
+              </div>
             </div>
-            <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{n.description}</p>
-          </div>
-        ))}
+          ))}
+          {notices.length === 0 && <p className="text-muted">No notices available.</p>}
+        </div>
       </div>
     </div>
   );
 };
 export default Notices;
+

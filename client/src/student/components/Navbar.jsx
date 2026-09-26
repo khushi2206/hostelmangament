@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { LogOut } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Navbar = () => {
-  const { logout } = React.useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,10 +13,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{ background: 'var(--primary)', color: 'white', padding: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-      <h2>HostelHub</h2>
-      <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <LogOut size={20} /> Logout
+    <nav className="navbar navbar-dark bg-primary px-4 shadow-sm">
+      <Link className="navbar-brand fw-bold mb-0 h1" to="/">HostelHub</Link>
+      <button className="btn btn-outline-light d-flex align-items-center gap-2" onClick={handleLogout}>
+        <LogOut size={18} /> Logout
       </button>
     </nav>
   );

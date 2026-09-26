@@ -5,12 +5,12 @@ const jwt = require('jsonwebtoken');
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userQuery.rows.length === 0) {
+    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (rows.length === 0) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const user = userQuery.rows[0];
+    const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -25,9 +25,9 @@ const login = async (req, res) => {
     // Get student details if student
     let studentDetails = null;
     if (user.role === 'student') {
-        const studentQuery = await pool.query('SELECT * FROM students WHERE user_id = $1', [user.user_id]);
-        if(studentQuery.rows.length > 0) {
-            studentDetails = studentQuery.rows[0];
+        const [studentRows] = await pool.query('SELECT * FROM students WHERE user_id = ?', [user.user_id]);
+        if(studentRows.length > 0) {
+            studentDetails = studentRows[0];
         }
     }
 
@@ -43,8 +43,8 @@ const changePassword = async (req, res) => {
     const userId = req.user.user_id;
 
     try {
-        const userQuery = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
-        const user = userQuery.rows[0];
+        const [rows] = await pool.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+        const user = rows[0];
 
         const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
         if (!isMatch) {
@@ -54,7 +54,7 @@ const changePassword = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        await pool.query('UPDATE users SET password_hash = $1 WHERE user_id = $2', [hashedPassword, userId]);
+        await pool.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [hashedPassword, userId]);
         res.json({ message: 'Password updated successfully' });
     } catch(error) {
         console.error(error);

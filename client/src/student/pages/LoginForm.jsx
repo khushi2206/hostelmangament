@@ -7,6 +7,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,24 +15,27 @@ const LoginForm = () => {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      alert('Login failed');
+      setError('Login failed. Please check your credentials.');
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-color)' }}>
-      <form onSubmit={handleSubmit} style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', width: '100%', maxWidth: '400px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary)' }}>HostelHub Login</h2>
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email / Enrollment No</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
-        </div>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem' }}>Login</button>
-      </form>
+    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+      <div className="card shadow-lg p-4" style={{ width: '100%', maxWidth: '400px' }}>
+        <h2 className="text-center text-primary mb-4 fw-bold">HostelHub</h2>
+        {error && <div className="alert alert-danger p-2 text-center">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label fw-semibold">Email address</label>
+            <input type="email" className="form-control form-control-lg" value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+          <div className="mb-4">
+            <label className="form-label fw-semibold">Password</label>
+            <input type="password" className="form-control form-control-lg" value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          <button type="submit" className="btn btn-primary w-100 btn-lg fw-semibold">Login</button>
+        </form>
+      </div>
     </div>
   );
 };

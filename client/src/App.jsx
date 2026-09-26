@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
-import './theme.css';
+
 
 // Pages
 import LoginForm from './student/pages/LoginForm';
@@ -51,3 +51,4 @@ function App() {
 }
 
 export default App;
+
