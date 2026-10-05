@@ -1,0 +1,9 @@
+body { background: #f4f6f7; color: #111827; }
+.sidebar { min-height: 100vh; background: #111827; }
+.brand { color: #2dd4bf; }
+.nav-link { color: #cbd5e1; }
+.nav-link:hover, .nav-link.active { background: #0d9488; color: white; }
+.page-card, .student-card, .room-card, .leave-card, .visitor-card, .complaint-card, .fee-card, .notice-card { border-radius: 12px; }
+.status-in-progress { background: #0d9488; }
+.icon-circle { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: #ccfbf1; color: #0f766e; font-size: 1.4rem; flex: 0 0 auto; }
+@media (max-width: 767px) { .sidebar { min-height: auto; } }
