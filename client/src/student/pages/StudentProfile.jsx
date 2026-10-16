@@ -1,83 +1,118 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
-const StudentProfile = () => {
-  const [profile, setProfile] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [successMsg, setSuccessMsg] = useState('');
+export default function StudentProfile() {
+    const [profile,  setProfile]  = useState(null);
+    const [editMode, setEditMode] = useState(false);
+    const [form,     setForm]     = useState({});
+    const [success,  setSuccess]  = useState('');
+    const [error,    setError]    = useState('');
 
-  useEffect(() => {
-    axios.get('http://localhost:5001/api/student/profile').then(res => {
-      setProfile(res.data);
-      setFormData({ phone: res.data.phone, address: res.data.address, emergency_contact: res.data.emergency_contact });
-    }).catch(console.error);
-  }, []);
+    useEffect(() => {
+        axiosClient.get('/student/profile').then(r => {
+            setProfile(r.data);
+            setForm({ phone: r.data.phone, address: r.data.address, emergency_contact: r.data.emergency_contact });
+        }).catch(e => setError(e.response?.data?.message || 'Failed to load profile.'));
+    }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.put('http://localhost:5001/api/student/profile', formData);
-      setProfile(res.data);
-      setEditMode(false);
-      setSuccessMsg('Profile updated successfully!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch(err) { alert('Error updating profile'); }
-  };
+    async function save(e) {
+        e.preventDefault(); setError('');
+        try {
+            const r = await axiosClient.put('/student/profile', form);
+            setProfile(r.data);
+            setEditMode(false);
+            setSuccess('Profile updated!');
+            setTimeout(() => setSuccess(''), 4000);
+        } catch (err) { setError(err.response?.data?.message || 'Failed to update.'); }
+    }
 
-  if (!profile) return <div className="text-center mt-5"><div className="spinner-border text-primary"></div></div>;
-
-  return (
-    <div className="container-fluid py-2">
-      <div className="card shadow-sm border-0 p-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="fw-bold text-primary mb-0">My Profile</h3>
-          <button onClick={() => setEditMode(!editMode)} className={`btn ${editMode ? 'btn-secondary' : 'btn-primary'}`}>
-            {editMode ? 'Cancel' : 'Edit Contact Info'}
-          </button>
+    if (error && !profile) return <div className="hh-alert-danger">{error}</div>;
+    if (!profile) return (
+        <div className="d-flex align-items-center gap-2 text-muted mt-4">
+            <div className="spinner-border spinner-border-sm" />Loading profile…
         </div>
+    );
 
-        {successMsg && <div className="alert alert-success">{successMsg}</div>}
-
-        <div className="row g-4 mb-5">
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Full Name</label><div className="fw-bold fs-5">{profile.name}</div></div>
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Enrollment No</label><div className="fw-bold fs-5">{profile.enrollment_no}</div></div>
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Course</label><div className="fw-bold fs-5">{profile.course}</div></div>
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Department</label><div className="fw-bold fs-5">{profile.department}</div></div>
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Semester</label><div className="fw-bold fs-5">{profile.semester}</div></div>
-          <div className="col-md-4 col-sm-6"><label className="text-muted small text-uppercase">Date of Birth</label><div className="fw-bold fs-5">{new Date(profile.dob).toLocaleDateString()}</div></div>
+    const InfoRow = ({ label, value }) => (
+        <div className="col-md-4 col-sm-6">
+            <div style={{fontSize:'0.72rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',color:'#94a3b8'}}>{label}</div>
+            <div style={{fontWeight:600,color:'#0f172a',marginTop:'0.15rem'}}>{value || '—'}</div>
         </div>
-        
-        <h4 className="fw-bold mb-4 border-top pt-4">Contact Information</h4>
+    );
 
-        {editMode ? (
-          <form onSubmit={handleSubmit} className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Phone Number</label>
-              <input type="text" className="form-control" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} required />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Emergency Contact</label>
-              <input type="text" className="form-control" value={formData.emergency_contact || ''} onChange={e => setFormData({...formData, emergency_contact: e.target.value})} required />
-            </div>
-            <div className="col-12">
-              <label className="form-label fw-semibold">Residential Address</label>
-              <textarea className="form-control" rows="3" value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} required />
-            </div>
-            <div className="col-12 mt-4">
-              <button type="submit" className="btn btn-success px-4 py-2 fw-semibold">Save Changes</button>
-            </div>
-          </form>
-        ) : (
-          <div className="row g-4">
-            <div className="col-md-6"><label className="text-muted small text-uppercase">Phone Number</label><div className="fw-bold fs-5">{profile.phone || '-'}</div></div>
-            <div className="col-md-6"><label className="text-muted small text-uppercase">Emergency Contact</label><div className="fw-bold fs-5">{profile.emergency_contact || '-'}</div></div>
-            <div className="col-12"><label className="text-muted small text-uppercase">Residential Address</label><div className="fw-bold fs-5" style={{whiteSpace: 'pre-wrap'}}>{profile.address || '-'}</div></div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-export default StudentProfile;
+    return (
+        <>
+            <div className="hh-page-title">My Profile</div>
+            <div className="hh-page-sub">Your personal and academic information.</div>
 
+            {success && <div className="hh-alert-success mb-3"><i className="bi bi-check-circle me-2" />{success}</div>}
+            {error   && <div className="hh-alert-danger  mb-3"><i className="bi bi-exclamation-circle me-2" />{error}</div>}
+
+            {/* Academic info */}
+            <div className="hh-card mb-4">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-mortarboard me-2" />Academic Details</span>
+                    <span className="hh-badge hh-badge-approved"><i className="bi bi-check-circle" style={{fontSize:'0.7rem'}} />Active</span>
+                </div>
+                <div className="hh-card-body">
+                    <div className="row g-4">
+                        <InfoRow label="Full Name"      value={profile.name} />
+                        <InfoRow label="Enrollment No"  value={profile.enrollment_no} />
+                        <InfoRow label="Email"          value={profile.email} />
+                        <InfoRow label="Course"         value={profile.course} />
+                        <InfoRow label="Department"     value={profile.department} />
+                        <InfoRow label="Semester"       value={profile.semester} />
+                        <InfoRow label="Date of Birth"  value={profile.dob ? new Date(profile.dob).toLocaleDateString() : null} />
+                        <InfoRow label="Room"           value={profile.room_number ? `${profile.room_number}, Block ${profile.block}` : 'Not Allocated'} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Contact info */}
+            <div className="hh-card">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-telephone me-2" />Contact Information</span>
+                    <button onClick={() => setEditMode(!editMode)}
+                        className={`btn btn-sm ${editMode ? 'btn-outline-secondary' : 'btn-primary'}`}>
+                        {editMode ? <><i className="bi bi-x me-1" />Cancel</> : <><i className="bi bi-pencil me-1" />Edit</>}
+                    </button>
+                </div>
+                <div className="hh-card-body">
+                    {editMode ? (
+                        <form onSubmit={save} className="row g-3">
+                            <div className="col-md-6">
+                                <label className="hh-form-label">Phone Number</label>
+                                <input type="text" className="form-control" value={form.phone || ''}
+                                    onChange={e => setForm({...form, phone: e.target.value})} required />
+                            </div>
+                            <div className="col-md-6">
+                                <label className="hh-form-label">Emergency Contact</label>
+                                <input type="text" className="form-control" value={form.emergency_contact || ''}
+                                    onChange={e => setForm({...form, emergency_contact: e.target.value})} required />
+                            </div>
+                            <div className="col-12">
+                                <label className="hh-form-label">Residential Address</label>
+                                <textarea className="form-control" rows="3" value={form.address || ''}
+                                    onChange={e => setForm({...form, address: e.target.value})} required />
+                            </div>
+                            <div className="col-12">
+                                <button type="submit" className="btn btn-primary">
+                                    <i className="bi bi-check2 me-2" />Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    ) : (
+                        <div className="row g-4">
+                            <InfoRow label="Phone Number"      value={profile.phone} />
+                            <InfoRow label="Emergency Contact" value={profile.emergency_contact} />
+                            <div className="col-12">
+                                <div style={{fontSize:'0.72rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',color:'#94a3b8'}}>Residential Address</div>
+                                <div style={{fontWeight:600,color:'#0f172a',marginTop:'0.15rem',whiteSpace:'pre-wrap'}}>{profile.address || '—'}</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}

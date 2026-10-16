@@ -1,94 +1,119 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
-const MessMenu = () => {
-  const [menu, setMenu] = useState([]);
-  const [optOuts, setOptOuts] = useState([]);
-  const [optData, setOptData] = useState({ opt_date: '', meal_type: '' });
-  const [successMsg, setSuccessMsg] = useState('');
+export default function MessMenu() {
+    const [menu,     setMenu]    = useState([]);
+    const [optOuts,  setOptOuts] = useState([]);
+    const [optForm,  setOptForm] = useState({ opt_date: '', meal_type: '' });
+    const [success,  setSuccess] = useState('');
+    const [error,    setError]   = useState('');
 
-  const fetchMenu = () => axios.get('http://localhost:5001/api/student/mess/menu').then(res => setMenu(res.data)).catch(console.error);
-  const fetchOptOuts = () => axios.get('http://localhost:5001/api/student/mess/opt-out').then(res => setOptOuts(res.data)).catch(console.error);
-  
-  useEffect(() => { fetchMenu(); fetchOptOuts(); }, []);
+    const loadMenu    = () => axiosClient.get('/student/mess/menu').then(r => setMenu(r.data)).catch(console.error);
+    const loadOptOuts = () => axiosClient.get('/student/mess/opt-out').then(r => setOptOuts(r.data)).catch(console.error);
+    useEffect(() => { loadMenu(); loadOptOuts(); }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('http://localhost:5001/api/student/mess/opt-out', optData);
-      setOptData({ opt_date: '', meal_type: '' });
-      fetchOptOuts();
-      setSuccessMsg('Successfully opted out of meal!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch(err) { alert('Error opting out'); }
-  };
+    async function submitOptOut(e) {
+        e.preventDefault(); setError('');
+        try {
+            await axiosClient.post('/student/mess/opt-out', optForm);
+            setOptForm({ opt_date: '', meal_type: '' });
+            loadOptOuts();
+            setSuccess('Opted out successfully!');
+            setTimeout(() => setSuccess(''), 4000);
+        } catch (err) { setError(err.response?.data?.message || 'Failed.'); }
+    }
 
-  const days = [...new Set(menu.map(m => m.day_of_week))];
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const meals = ['Breakfast','Lunch','Dinner'];
+    const menuByDay = {};
+    menu.forEach(m => {
+        if (!menuByDay[m.day_of_week]) menuByDay[m.day_of_week] = {};
+        menuByDay[m.day_of_week][m.meal_type] = m.items;
+    });
+    const activeDays = days.filter(d => menuByDay[d]);
 
-  return (
-    <div className="container-fluid py-2 d-flex flex-column gap-4">
-      <div className="card shadow-sm border-0 p-4">
-        <h3 className="fw-bold text-primary mb-4">Weekly Mess Menu</h3>
-        <div className="row g-4">
-          {days.map(day => (
-            <div className="col-lg-6" key={day}>
-              <div className="card border-0 shadow-sm h-100 bg-light">
-                <div className="card-body">
-                  <h5 className="card-title fw-bold border-bottom pb-2 mb-3">{day}</h5>
-                  <div className="row g-3">
-                    {menu.filter(m => m.day_of_week === day).map(m => (
-                      <div className="col-12" key={m.menu_id}>
-                        <div className="fw-semibold text-primary">{m.meal_type}</div>
-                        <div className="text-muted small">{m.items}</div>
-                      </div>
-                    ))}
-                  </div>
+    return (
+        <>
+            <div className="hh-page-title">Mess Menu</div>
+            <div className="hh-page-sub">Weekly meal schedule and opt-out management.</div>
+
+            {/* Weekly table */}
+            <div className="hh-card mb-4">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-calendar3-week me-2" />Weekly Schedule</span>
                 </div>
-              </div>
+                {activeDays.length === 0
+                    ? <div className="hh-card-body text-muted">No mess menu configured yet.</div>
+                    : <div className="table-responsive">
+                        <table className="hh-table">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    {meals.map(m => <th key={m}>{m}</th>)}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeDays.map(day => (
+                                    <tr key={day}>
+                                        <td className="fw-semibold">{day}</td>
+                                        {meals.map(m => (
+                                            <td key={m} style={{fontSize:'0.82rem',color:'#475569'}}>
+                                                {menuByDay[day]?.[m] || '—'}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                }
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="card shadow-sm border-0 p-4">
-        <h3 className="fw-bold mb-2">Meal Opt-Out</h3>
-        <p className="text-muted mb-4">Going out? Opt-out of a meal to help us prevent food waste!</p>
-        
-        {successMsg && <div className="alert alert-success">{successMsg}</div>}
-        
-        <form onSubmit={handleSubmit} className="row g-3 align-items-end mb-5">
-          <div className="col-md-4">
-            <label className="form-label fw-semibold">Date</label>
-            <input type="date" className="form-control" value={optData.opt_date} onChange={e => setOptData({...optData, opt_date: e.target.value})} required />
-          </div>
-          <div className="col-md-4">
-            <label className="form-label fw-semibold">Meal Type</label>
-            <select className="form-select" value={optData.meal_type} onChange={e => setOptData({...optData, meal_type: e.target.value})} required>
-              <option value="">Select Meal</option>
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-            </select>
-          </div>
-          <div className="col-md-4">
-            <button type="submit" className="btn btn-primary w-100 fw-semibold">Opt Out</button>
-          </div>
-        </form>
+            {/* Opt-out */}
+            <div className="hh-card">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-x-circle me-2" />Meal Opt-Out</span>
+                </div>
+                <div className="hh-card-body">
+                    <p className="text-muted mb-3" style={{fontSize:'0.85rem'}}>Going out? Opt-out of a meal to reduce food waste.</p>
+                    {success && <div className="hh-alert-success mb-3"><i className="bi bi-check-circle me-2" />{success}</div>}
+                    {error   && <div className="hh-alert-danger  mb-3"><i className="bi bi-exclamation-circle me-2" />{error}</div>}
+                    <form onSubmit={submitOptOut} className="row g-3">
+                        <div className="col-md-5">
+                            <label className="hh-form-label">Date</label>
+                            <input type="date" className="form-control" value={optForm.opt_date}
+                                onChange={e => setOptForm({...optForm, opt_date: e.target.value})} required />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="hh-form-label">Meal</label>
+                            <select className="form-select" value={optForm.meal_type}
+                                onChange={e => setOptForm({...optForm, meal_type: e.target.value})} required>
+                                <option value="">Select meal…</option>
+                                {meals.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                        </div>
+                        <div className="col-md-3 d-flex align-items-end">
+                            <button type="submit" className="btn btn-primary w-100">
+                                <i className="bi bi-x-circle me-1" />Opt Out
+                            </button>
+                        </div>
+                    </form>
 
-        <h5 className="fw-bold mb-3 border-top pt-4">Opt-Out History</h5>
-        {optOuts.length === 0 ? <p className="text-muted">No records found.</p> : (
-          <ul className="list-group">
-            {optOuts.map(opt => (
-              <li className="list-group-item d-flex justify-content-between align-items-center" key={opt.opt_id}>
-                <span>{new Date(opt.opt_date).toLocaleDateString()}</span>
-                <span className="badge bg-secondary rounded-pill">{opt.meal_type}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
-export default MessMenu;
-
+                    {optOuts.length > 0 && (
+                        <div className="mt-4">
+                            <div className="fw-semibold mb-2" style={{fontSize:'0.85rem',color:'#374151'}}>Opt-Out History</div>
+                            <div className="d-flex flex-column gap-2">
+                                {optOuts.map(o => (
+                                    <div key={o.opt_id} className="d-flex justify-content-between align-items-center p-3 rounded" style={{background:'#f8fafc',border:'1px solid #e2e8f0'}}>
+                                        <span style={{fontSize:'0.87rem'}}>{new Date(o.opt_date).toLocaleDateString()}</span>
+                                        <span className="hh-badge hh-badge-default">{o.meal_type}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}

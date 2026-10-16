@@ -1,0 +1,292 @@
+/* ═══════════════════════════════════════════════════════════════
+   HostelHub – Unified Design System
+   Color palette:
+     Sidebar bg    : #0f172a
+     Sidebar accent: #0d9488  (teal)
+     Page bg       : #f1f5f9
+     Card bg       : #ffffff
+     Brand text    : #2dd4bf
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Reset / Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 0.93rem;
+}
+
+/* ── App Shell ────────────────────────────────────────────────── */
+.hh-shell { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ──────────────────────────────────────────────────── */
+.hh-sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+.hh-sidebar-brand {
+    padding: 1.2rem 1rem 0.8rem;
+    border-bottom: 1px solid #1e293b;
+}
+.hh-brand-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2dd4bf;
+    letter-spacing: -0.01em;
+}
+.hh-brand-sub {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-top: 0.1rem;
+}
+.hh-sidebar-nav {
+    padding: 0.75rem 0.6rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.hh-nav-section {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+    padding: 0.7rem 0.6rem 0.3rem;
+    margin-top: 0.5rem;
+}
+.hh-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.13s, color 0.13s;
+}
+.hh-nav-link i { font-size: 1rem; flex-shrink: 0; }
+.hh-nav-link:hover { background: #1e293b; color: #e2e8f0; text-decoration: none; }
+.hh-nav-link.active { background: #0d9488; color: #fff !important; }
+
+/* ── Main content area ────────────────────────────────────────── */
+.hh-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* ── Top bar ──────────────────────────────────────────────────── */
+.hh-topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.65rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.hh-topbar-title { font-weight: 700; color: #0f172a; font-size: 1rem; }
+.hh-topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+.hh-user-badge {
+    display: flex; align-items: center; gap: 0.45rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem; color: #334155;
+}
+.hh-user-badge i { color: #0d9488; }
+
+/* ── Page content wrapper ─────────────────────────────────────── */
+.hh-content { flex: 1; padding: 1.5rem; }
+
+/* ── Cards ────────────────────────────────────────────────────── */
+.hh-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.hh-card-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.hh-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+.hh-card-body { padding: 1.25rem; }
+
+/* ── Stat cards (dashboard summary) ──────────────────────────── */
+.hh-stat {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.hh-stat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: #ccfbf1;
+    color: #0f766e;
+    display: grid; place-items: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.hh-stat-icon.blue  { background: #dbeafe; color: #1d4ed8; }
+.hh-stat-icon.amber { background: #fef3c7; color: #b45309; }
+.hh-stat-icon.rose  { background: #ffe4e6; color: #be123c; }
+.hh-stat-icon.purple{ background: #ede9fe; color: #7c3aed; }
+.hh-stat-icon.teal  { background: #ccfbf1; color: #0f766e; }
+.hh-stat-val { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
+.hh-stat-label { font-size: 0.78rem; color: #64748b; margin-top: 0.2rem; }
+.hh-stat-sub { font-size: 0.73rem; color: #94a3b8; margin-top: 0.15rem; }
+
+/* ── Tables ───────────────────────────────────────────────────── */
+.hh-table { width: 100%; border-collapse: collapse; }
+.hh-table th {
+    padding: 0.65rem 1rem;
+    background: #f8fafc;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+.hh-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+.hh-table tr:last-child td { border-bottom: none; }
+.hh-table tbody tr:hover { background: #f8fafc; }
+
+/* ── Badges ───────────────────────────────────────────────────── */
+.hh-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+}
+.hh-badge-pending  { background: #fef9c3; color: #a16207; }
+.hh-badge-approved { background: #dcfce7; color: #15803d; }
+.hh-badge-rejected { background: #fee2e2; color: #b91c1c; }
+.hh-badge-resolved { background: #dcfce7; color: #15803d; }
+.hh-badge-progress { background: #e0f2fe; color: #0369a1; }
+.hh-badge-paid     { background: #dcfce7; color: #15803d; }
+.hh-badge-due      { background: #fee2e2; color: #b91c1c; }
+.hh-badge-partial  { background: #fef3c7; color: #b45309; }
+.hh-badge-default  { background: #f1f5f9; color: #475569; }
+
+/* ── Forms ────────────────────────────────────────────────────── */
+.hh-form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 0.3rem; }
+.form-control:focus, .form-select:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13,148,136,.15);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.btn-teal {
+    background: #0d9488;
+    border: 1px solid #0d9488;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.87rem;
+    padding: 0.4rem 1rem;
+}
+.btn-teal:hover { background: #0f766e; border-color: #0f766e; color: #fff; }
+.btn-primary {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+}
+.btn-primary:hover { background: #0f766e !important; border-color: #0f766e !important; }
+.btn-outline-primary {
+    color: #0d9488 !important;
+    border-color: #0d9488 !important;
+}
+.btn-outline-primary:hover {
+    background: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: #fff !important;
+}
+
+/* ── Alert strip ──────────────────────────────────────────────── */
+.hh-alert-info   { background:#e0f2fe; border-left: 4px solid #0ea5e9; color:#0c4a6e; border-radius:8px; padding:.75rem 1rem; }
+.hh-alert-success{ background:#dcfce7; border-left: 4px solid #22c55e; color:#14532d; border-radius:8px; padding:.75rem 1rem; }
+.hh-alert-danger { background:#fee2e2; border-left: 4px solid #ef4444; color:#7f1d1d; border-radius:8px; padding:.75rem 1rem; }
+.hh-alert-warn   { background:#fef9c3; border-left: 4px solid #eab308; color:#78350f; border-radius:8px; padding:.75rem 1rem; }
+
+/* ── Page header ──────────────────────────────────────────────── */
+.hh-page-title { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
+.hh-page-sub   { font-size: 0.85rem; color: #64748b; margin-bottom: 1.25rem; }
+
+/* ── Login page ───────────────────────────────────────────────── */
+.hh-login-bg {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+.hh-login-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.hh-login-logo { text-align: center; margin-bottom: 1.75rem; }
+.hh-login-logo .brand-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #0d9488, #134e4a);
+    border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: #fff;
+    margin-bottom: 0.75rem;
+}
+.hh-login-logo h2 { font-weight: 800; color: #0f172a; font-size: 1.6rem; margin-bottom: 0.15rem; }
+.hh-login-logo p  { font-size: 0.84rem; color: #64748b; margin: 0; }
+
+/* ── Status badge (student pages) ────────────────────────────── */
+.page-card { border-radius: 12px; }
+
+/* ── Responsive sidebar ───────────────────────────────────────── */
+@media (max-width: 767px) {
+    .hh-sidebar { display: none; }
+    .hh-content { padding: 1rem; }
+}
+
+/* Legacy Bootstrap overrides still needed by admin components */
+.sidebar { background: #0f172a; min-height: 100vh; }
+.brand   { color: #2dd4bf; }
+.nav-link { color: #94a3b8; border-radius: 8px; }
+.nav-link:hover, .nav-link.active { background: #0d9488 !important; color: #fff !important; }
+.icon-circle { width: 44px; height: 44px; border-radius: 10px; background: #ccfbf1; color: #0f766e; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }

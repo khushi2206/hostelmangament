@@ -1,48 +1,57 @@
 const express = require('express');
+const controller = require('../controllers/student.controller');
+
 const router = express.Router();
-const { auth, isStudent } = require('../middleware/auth.middleware');
-const {
-    getProfile, updateProfile, getRoom, getLeaves, submitLeave, cancelLeave,
-    getVisitors, registerVisitor, getComplaints, submitComplaint, getComplaintDetails,
-    getFees, getNotices, getDashboardInfo,
-    getMessMenu, getMessOptOuts, submitMessOptOut,
-    getRoomChanges, submitRoomChange,
-    getLostAndFound, submitLostAndFound,
-    getLaundry, submitLaundry
-} = require('../controllers/student.controller');
 
-router.use(auth, isStudent);
+function requireStudent(req, res, next) {
+	if (req.user.role !== 'student') return res.status(403).json({ message: 'Student access required' });
+	next();
+}
 
-router.get('/profile', getProfile);
-router.put('/profile', updateProfile);
+router.use(requireStudent);
 
-router.get('/room', getRoom);
-router.get('/room-change', getRoomChanges);
-router.post('/room-change', submitRoomChange);
+// Profile
+router.get('/profile', controller.getProfile);
+router.put('/profile', controller.updateProfile);
 
-router.get('/leaves', getLeaves);
-router.post('/leaves', submitLeave);
-router.delete('/leaves/:id', cancelLeave);
+// Dashboard
+router.get('/dashboard', controller.getDashboard);
 
-router.get('/visitors', getVisitors);
-router.post('/visitors', registerVisitor);
+// Leaves
+router.get('/leaves', controller.getLeaves);
+router.post('/leaves', controller.createLeave);
+router.delete('/leaves/:id', controller.deleteLeave);
 
-router.get('/complaints', getComplaints);
-router.post('/complaints', submitComplaint);
-router.get('/complaints/:id', getComplaintDetails);
+// Visitors
+router.get('/visitors', controller.getStudentVisitors);
+router.post('/visitors', controller.createStudentVisitor);
 
-router.get('/fees', getFees);
-router.get('/notices', getNotices);
-router.get('/dashboard', getDashboardInfo);
+// Complaints
+router.get('/complaints', controller.getStudentComplaints);
+router.post('/complaints', controller.createStudentComplaint);
 
-router.get('/mess/menu', getMessMenu);
-router.get('/mess/opt-out', getMessOptOuts);
-router.post('/mess/opt-out', submitMessOptOut);
+// Room
+router.get('/room', controller.getStudentRoom);
+router.get('/room-change', controller.getRoomChangeRequests);
+router.post('/room-change', controller.createRoomChangeRequest);
 
-router.get('/lost-found', getLostAndFound);
-router.post('/lost-found', submitLostAndFound);
+// Fees
+router.get('/fees', controller.getStudentFees);
 
-router.get('/laundry', getLaundry);
-router.post('/laundry', submitLaundry);
+// Notices
+router.get('/notices', controller.getStudentNotices);
+
+// Mess menu
+router.get('/mess/menu', controller.getMessMenu);
+router.get('/mess/opt-out', controller.getMessOptOuts);
+router.post('/mess/opt-out', controller.createMessOptOut);
+
+// Lost & Found
+router.get('/lost-found', controller.getLostFound);
+router.post('/lost-found', controller.createLostFound);
+
+// Laundry
+router.get('/laundry', controller.getLaundry);
+router.post('/laundry', controller.createLaundry);
 
 module.exports = router;

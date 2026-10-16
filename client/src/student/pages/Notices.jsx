@@ -1,36 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
-const Notices = () => {
-  const [notices, setNotices] = useState([]);
+export default function Notices() {
+    const [notices, setNotices] = useState([]);
+    const [error,   setError]   = useState('');
 
-  useEffect(() => {
-    axios.get('http://localhost:5001/api/student/notices').then(res => setNotices(res.data)).catch(console.error);
-  }, []);
+    useEffect(() => {
+        axiosClient.get('/student/notices')
+            .then(r => setNotices(r.data))
+            .catch(e => setError(e.response?.data?.message || 'Failed to load.'));
+    }, []);
 
-  return (
-    <div className="container-fluid py-2">
-      <div className="card shadow-sm border-0 p-4">
-        <h3 className="fw-bold mb-4">Hostel Notices</h3>
-        <div className="row g-4">
-          {notices.map((n) => (
-            <div className="col-12" key={n.notice_id}>
-              <div className="card h-100 border-start border-4 border-primary shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5 className="card-title fw-bold mb-0">{n.title}</h5>
-                    <span className="badge bg-light text-dark border">{new Date(n.date).toLocaleDateString()}</span>
-                  </div>
-                  <p className="card-text text-muted" style={{ whiteSpace: 'pre-wrap' }}>{n.description}</p>
+    return (
+        <>
+            <div className="hh-page-title">Notices</div>
+            <div className="hh-page-sub">Official announcements and hostel updates from the warden.</div>
+
+            {error && <div className="hh-alert-danger mb-3">{error}</div>}
+
+            {notices.length === 0 && !error && (
+                <div className="hh-card">
+                    <div className="hh-card-body text-center text-muted py-5">
+                        <i className="bi bi-megaphone display-5 d-block mb-2" style={{color:'#cbd5e1'}} />
+                        No notices available right now.
+                    </div>
                 </div>
-              </div>
-            </div>
-          ))}
-          {notices.length === 0 && <p className="text-muted">No notices available.</p>}
-        </div>
-      </div>
-    </div>
-  );
-};
-export default Notices;
+            )}
 
+            <div className="d-flex flex-column gap-3">
+                {notices.map(n => (
+                    <div key={n.notice_id} className="hh-card">
+                        <div className="hh-card-body">
+                            <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                <h6 className="fw-bold mb-0" style={{color:'#0f172a'}}>{n.title}</h6>
+                                <span className="hh-badge hh-badge-default flex-shrink-0">
+                                    <i className="bi bi-calendar3" style={{fontSize:'0.7rem'}} />
+                                    {new Date(n.created_at || n.date).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <p className="text-muted mb-0" style={{fontSize:'0.87rem', whiteSpace:'pre-wrap'}}>{n.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}

@@ -1,93 +1,105 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
-const Visitors = () => {
-  const [visitors, setVisitors] = useState([]);
-  const [formData, setFormData] = useState({ visitor_name: '', relation: '', phone: '', visit_date: '', visit_time: '' });
-  const [successMsg, setSuccessMsg] = useState('');
+export default function Visitors() {
+    const [list,    setList]   = useState([]);
+    const [form,    setForm]   = useState({ visitor_name:'', relation:'', phone:'', visit_date:'', visit_time:'' });
+    const [success, setSuccess]= useState('');
+    const [error,   setError]  = useState('');
+    const [saving,  setSaving] = useState(false);
 
-  const fetchVisitors = () => axios.get('http://localhost:5001/api/student/visitors').then(res => setVisitors(res.data)).catch(console.error);
-  
-  useEffect(() => { fetchVisitors(); }, []);
+    const load = () => axiosClient.get('/student/visitors').then(r => setList(r.data)).catch(console.error);
+    useEffect(() => { load(); }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('http://localhost:5001/api/student/visitors', formData);
-      setFormData({ visitor_name: '', relation: '', phone: '', visit_date: '', visit_time: '' });
-      fetchVisitors();
-      setSuccessMsg('Visitor registered successfully!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch(err) { alert('Error registering visitor'); }
-  };
+    async function submit(e) {
+        e.preventDefault(); setError('');
+        try {
+            setSaving(true);
+            await axiosClient.post('/student/visitors', form);
+            setForm({ visitor_name:'', relation:'', phone:'', visit_date:'', visit_time:'' });
+            load();
+            setSuccess('Visitor registered successfully!');
+            setTimeout(() => setSuccess(''), 4000);
+        } catch (err) { setError(err.response?.data?.message || 'Failed to register.'); }
+        finally { setSaving(false); }
+    }
 
-  return (
-    <div className="container-fluid py-2 d-flex flex-column gap-4">
-      <div className="card shadow-sm border-0 p-4">
-        <h3 className="fw-bold text-primary mb-4">Register Visitor</h3>
-        {successMsg && <div className="alert alert-success">{successMsg}</div>}
-        
-        <form onSubmit={handleSubmit} className="row g-3">
-          <div className="col-md-4">
-            <label className="form-label fw-semibold">Visitor Name</label>
-            <input type="text" className="form-control" value={formData.visitor_name} onChange={e => setFormData({...formData, visitor_name: e.target.value})} required />
-          </div>
-          <div className="col-md-4">
-            <label className="form-label fw-semibold">Relation</label>
-            <input type="text" className="form-control" value={formData.relation} onChange={e => setFormData({...formData, relation: e.target.value})} required />
-          </div>
-          <div className="col-md-4">
-            <label className="form-label fw-semibold">Phone</label>
-            <input type="text" className="form-control" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label fw-semibold">Visit Date</label>
-            <input type="date" className="form-control" value={formData.visit_date} onChange={e => setFormData({...formData, visit_date: e.target.value})} required />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label fw-semibold">Visit Time</label>
-            <input type="time" className="form-control" value={formData.visit_time} onChange={e => setFormData({...formData, visit_time: e.target.value})} required />
-          </div>
-          <div className="col-12 mt-4">
-            <button type="submit" className="btn btn-primary px-4 fw-semibold">Register Visitor</button>
-          </div>
-        </form>
-      </div>
+    return (
+        <>
+            <div className="hh-page-title">Visitors</div>
+            <div className="hh-page-sub">Register expected visitors and track approvals.</div>
 
-      <div className="card shadow-sm border-0 p-4">
-        <h3 className="fw-bold mb-4">Visitor History</h3>
-        {visitors.length === 0 ? <p className="text-muted">No visitors registered.</p> : (
-          <div className="table-responsive">
-            <table className="table table-hover align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>Name</th>
-                  <th>Relation</th>
-                  <th>Phone</th>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visitors.map((v) => (
-                  <tr key={v.visitor_id}>
-                    <td className="fw-semibold">{v.visitor_name}</td>
-                    <td>{v.relation}</td>
-                    <td>{v.phone}</td>
-                    <td>{new Date(v.visit_date).toLocaleDateString()}</td>
-                    <td>{v.visit_time}</td>
-                    <td><StatusBadge status={v.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-export default Visitors;
+            <div className="hh-card mb-4">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-person-plus me-2 text-primary" />Register Visitor</span>
+                </div>
+                <div className="hh-card-body">
+                    {success && <div className="hh-alert-success mb-3"><i className="bi bi-check-circle me-2" />{success}</div>}
+                    {error   && <div className="hh-alert-danger  mb-3"><i className="bi bi-exclamation-circle me-2" />{error}</div>}
+                    <form onSubmit={submit} className="row g-3">
+                        <div className="col-md-4">
+                            <label className="hh-form-label">Visitor Name</label>
+                            <input type="text" className="form-control" value={form.visitor_name}
+                                onChange={e => setForm({...form, visitor_name: e.target.value})} required />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="hh-form-label">Relation</label>
+                            <input type="text" className="form-control" value={form.relation}
+                                onChange={e => setForm({...form, relation: e.target.value})} required />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="hh-form-label">Phone</label>
+                            <input type="text" className="form-control" value={form.phone}
+                                onChange={e => setForm({...form, phone: e.target.value})} required />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="hh-form-label">Visit Date</label>
+                            <input type="date" className="form-control" value={form.visit_date}
+                                onChange={e => setForm({...form, visit_date: e.target.value})} required />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="hh-form-label">Visit Time</label>
+                            <input type="time" className="form-control" value={form.visit_time}
+                                onChange={e => setForm({...form, visit_time: e.target.value})} required />
+                        </div>
+                        <div className="col-12">
+                            <button type="submit" className="btn btn-primary" disabled={saving}>
+                                {saving ? <><span className="spinner-border spinner-border-sm me-2" />Registering…</> : <><i className="bi bi-person-check me-2" />Register Visitor</>}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
+            <div className="hh-card">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-clock-history me-2" />Visitor History</span>
+                    <span className="hh-badge hh-badge-default">{list.length} records</span>
+                </div>
+                <div className="table-responsive">
+                    <table className="hh-table">
+                        <thead>
+                            <tr><th>Name</th><th>Relation</th><th>Phone</th><th>Date</th><th>Time</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {list.length === 0
+                                ? <tr><td colSpan="6" className="text-center text-muted py-4">No visitors registered.</td></tr>
+                                : list.map(v => (
+                                    <tr key={v.visitor_id}>
+                                        <td className="fw-semibold">{v.visitor_name}</td>
+                                        <td>{v.relation}</td>
+                                        <td>{v.phone}</td>
+                                        <td>{new Date(v.visit_date).toLocaleDateString()}</td>
+                                        <td>{v.visit_time}</td>
+                                        <td><StatusBadge status={v.status} /></td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </>
+    );
+}

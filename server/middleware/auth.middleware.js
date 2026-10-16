@@ -1,25 +1,25 @@
-const jwt = require('jsonwebtoken');
+﻿const crypto = require('crypto');
 
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.split(' ')[1];
-  
-  if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Contains user_id and role
+const sessions = new Map();
+
+function createSession(user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    sessions.set(token, { user_id: user.user_id, email: user.email, role: user.role });
+    return token;
+}
+
+function authenticate(req, res, next) {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+    const user = sessions.get(token);
+    if (!user) return res.status(401).json({ message: 'Authentication required' });
+    req.user = user;
+    req.sessionToken = token;
     next();
-  } catch (err) {
-    res.status(400).json({ message: 'Token is not valid' });
-  }
-};
+}
 
-const isStudent = (req, res, next) => {
-  if (req.user && req.user.role === 'student') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Access denied: Students only' });
-  }
-};
+function destroySession(token) {
+    sessions.delete(token);
+}
 
-module.exports = { auth, isStudent };
+module.exports = { createSession, authenticate, destroySession };
