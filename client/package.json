@@ -11,10 +11,10 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "lucide-react": "^1.58.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.1",
     "vite": "^6.0.7"
-  },
-  "devDependencies": {}
+  }
 }

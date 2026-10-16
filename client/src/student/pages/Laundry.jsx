@@ -1,100 +1,68 @@
 import React, { useEffect, useState } from 'react';
-import axiosClient from '../../api/axiosClient';
+import axios from 'axios';
 import StatusBadge from '../components/StatusBadge';
 
-export default function Laundry() {
-    const [requests, setRequests] = useState([]);
-    const [count,    setCount]    = useState('');
-    const [success,  setSuccess]  = useState('');
-    const [error,    setError]    = useState('');
+const Laundry = () => {
+  const [requests, setRequests] = useState([]);
+  const [clothesCount, setClothesCount] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-    const load = () => axiosClient.get('/student/laundry').then(r => setRequests(r.data)).catch(console.error);
-    useEffect(() => { load(); }, []);
+  const fetchLaundry = () => axios.get('http://localhost:5000/api/student/laundry').then(res => setRequests(res.data)).catch(console.error);
+  
+  useEffect(() => { fetchLaundry(); }, []);
 
-    async function submit(e) {
-        e.preventDefault(); setError('');
-        try {
-            await axiosClient.post('/student/laundry', { clothes_count: count });
-            setCount('');
-            load();
-            setSuccess('Laundry pickup scheduled!');
-            setTimeout(() => setSuccess(''), 4000);
-        } catch (err) { setError(err.response?.data?.message || 'Failed.'); }
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/student/laundry', { clothes_count: clothesCount });
+      setClothesCount('');
+      fetchLaundry();
+      setSuccessMsg('Laundry request sent successfully!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch(err) { alert('Error submitting request'); }
+  };
 
-    const pending  = requests.filter(r => r.status === 'Pending').length;
-    const inProgress = requests.filter(r => r.status === 'In Progress').length;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ background: 'white', padding: '2.5rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
+        <h2 style={{ marginTop: 0, color: 'var(--primary)', marginBottom: '1.5rem' }}>Schedule Laundry Pickup</h2>
+        {successMsg && <div style={{ background: '#d1fae5', color: '#065f46', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem' }}>{successMsg}</div>}
+        
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Number of Clothes</label>
+            <input type="number" min="1" style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '1rem' }} value={clothesCount} onChange={e => setClothesCount(e.target.value)} required />
+          </div>
+          <button type="submit" style={{ padding: '0.75rem 2rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, height: '42px' }}>Request Pickup</button>
+        </form>
+      </div>
 
-    return (
-        <>
-            <div className="hh-page-title">Laundry</div>
-            <div className="hh-page-sub">Schedule laundry pickup and track your requests.</div>
-
-            {requests.length > 0 && (
-                <div className="row g-3 mb-4">
-                    <div className="col-md-4">
-                        <div className="hh-stat"><div className="hh-stat-icon blue"><i className="bi bi-bag"/></div>
-                            <div><div className="hh-stat-label">Total Requests</div><div className="hh-stat-val">{requests.length}</div></div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="hh-stat"><div className="hh-stat-icon amber"><i className="bi bi-clock"/></div>
-                            <div><div className="hh-stat-label">Pending</div><div className="hh-stat-val">{pending}</div></div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="hh-stat"><div className="hh-stat-icon teal"><i className="bi bi-arrow-repeat"/></div>
-                            <div><div className="hh-stat-label">In Progress</div><div className="hh-stat-val">{inProgress}</div></div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="hh-card mb-4">
-                <div className="hh-card-header">
-                    <span className="hh-card-title"><i className="bi bi-plus-circle me-2 text-primary" />New Pickup Request</span>
-                </div>
-                <div className="hh-card-body">
-                    {success && <div className="hh-alert-success mb-3"><i className="bi bi-check-circle me-2" />{success}</div>}
-                    {error   && <div className="hh-alert-danger  mb-3"><i className="bi bi-exclamation-circle me-2" />{error}</div>}
-                    <form onSubmit={submit} className="row g-3 align-items-end">
-                        <div className="col-md-6">
-                            <label className="hh-form-label">Number of Clothes</label>
-                            <input type="number" min="1" max="50" className="form-control" value={count}
-                                onChange={e => setCount(e.target.value)} required />
-                        </div>
-                        <div className="col-md-6">
-                            <button type="submit" className="btn btn-primary w-100">
-                                <i className="bi bi-bag me-2" />Schedule Pickup
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div className="hh-card">
-                <div className="hh-card-header">
-                    <span className="hh-card-title"><i className="bi bi-clock-history me-2" />Request History</span>
-                </div>
-                <div className="table-responsive">
-                    <table className="hh-table">
-                        <thead><tr><th>Request ID</th><th>Items</th><th>Date</th><th>Status</th></tr></thead>
-                        <tbody>
-                            {requests.length === 0
-                                ? <tr><td colSpan="4" className="text-center text-muted py-4">No laundry requests yet.</td></tr>
-                                : requests.map(r => (
-                                    <tr key={r.laundry_id}>
-                                        <td className="fw-semibold text-muted">#LND-{r.laundry_id}</td>
-                                        <td>{r.clothes_count} clothes</td>
-                                        <td>{new Date(r.request_date).toLocaleDateString()}</td>
-                                        <td><StatusBadge status={r.status} /></td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </>
-    );
-}
+      <div style={{ background: 'white', padding: '2.5rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', flex: 1 }}>
+        <h2 style={{ marginTop: 0, color: 'var(--text-dark)', marginBottom: '1.5rem' }}>Laundry History</h2>
+        {requests.length === 0 ? <p style={{ color: 'var(--text-light)' }}>No laundry requests found.</p> : (
+          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-color)', borderBottom: '2px solid var(--border-color)' }}>
+                <th style={{ padding: '1rem', fontWeight: 600 }}>Request ID</th>
+                <th style={{ padding: '1rem', fontWeight: 600 }}>Clothes Count</th>
+                <th style={{ padding: '1rem', fontWeight: 600 }}>Date</th>
+                <th style={{ padding: '1rem', fontWeight: 600 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map(req => (
+                <tr key={req.laundry_id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '1rem' }}>#LND-{req.laundry_id}</td>
+                  <td style={{ padding: '1rem' }}>{req.clothes_count} items</td>
+                  <td style={{ padding: '1rem' }}>{new Date(req.request_date).toLocaleDateString()}</td>
+                  <td style={{ padding: '1rem' }}><StatusBadge status={req.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+};
+export default Laundry;
