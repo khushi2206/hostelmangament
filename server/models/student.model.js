@@ -1,4 +1,4 @@
-﻿const db = require('../config/db');
+const db = require('../config/db');
 
 async function getAllStudents(filters) {
     let query = `
@@ -360,7 +360,10 @@ async function getDashboardStats() {
         SUM(capacity) AS total_capacity, SUM(occupied) AS occupied_beds
         FROM rooms`);
     const [leaveRows] = await db.query("SELECT COUNT(*) AS pending FROM leave_requests WHERE status = 'Pending'");
-    const [visitorRows] = await db.query("SELECT COUNT(*) AS pending, SUM(CASE WHEN visit_date = CURDATE() THEN 1 ELSE 0 END) AS today FROM visitors WHERE status = 'Pending' OR visit_date = CURDATE()");
+    const [visitorRows] = await db.query(`SELECT
+        SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
+        SUM(CASE WHEN visit_date = CURDATE() THEN 1 ELSE 0 END) AS today
+        FROM visitors`);
     const complaintRows = await optionalCount(`SELECT
         SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
         SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress,

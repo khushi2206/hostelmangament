@@ -1,57 +1,121 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
-import { Link } from 'react-router-dom';
 
-const StudentDashboard = () => {
-  const [data, setData] = useState(null);
+export default function StudentDashboard() {
+    const { user }  = useAuth();
+    const [data,    setData]    = useState(null);
+    const [error,   setError]   = useState('');
 
-  useEffect(() => {
-    axiosClient.get('/student/dashboard').then(res => setData(res.data)).catch(console.error);
-  }, []);
+    useEffect(() => {
+        axiosClient.get('/student/dashboard')
+            .then(r => setData(r.data))
+            .catch(e => setError(e.response?.data?.message || 'Failed to load dashboard.'));
+    }, []);
 
-  if (!data) return <div>Loading...</div>;
-
-  const cardStyle = { background: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', flex: '1 1 300px' };
-
-  return (
-    <div>
-      <h1 style={{ marginBottom: '2rem' }}>Welcome, {data.student.name}</h1>
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-        <div style={cardStyle}>
-          <h3>My Room</h3>
-          {data.room ? <p>{data.room.block} - {data.room.room_number} (Floor {data.room.floor})</p> : <p>Not Allocated</p>}
-          <Link to="/room" style={{ color: 'var(--primary)', textDecoration: 'none' }}>View Details</Link>
+    if (error) return <div className="hh-alert-danger">{error}</div>;
+    if (!data)  return (
+        <div className="d-flex align-items-center gap-2 text-muted mt-4">
+            <div className="spinner-border spinner-border-sm text-primary" />
+            Loading dashboard…
         </div>
-        <div style={cardStyle}>
-          <h3>Latest Leave Status</h3>
-          <p style={{ margin: '1rem 0' }}><StatusBadge status={data.latestLeaveStatus || 'No requests'} /></p>
-          <Link to="/leaves" style={{ color: 'var(--primary)', textDecoration: 'none' }}>View All</Link>
-        </div>
-        <div style={cardStyle}>
-          <h3>Fee Status</h3>
-          {data.feeStatus ? (
-            <>
-              <p style={{ margin: '1rem 0' }}><StatusBadge status={data.feeStatus.status} /></p>
-              <p>Remaining: ₹{data.feeStatus.remaining}</p>
-            </>
-          ) : <p>No fee records</p>}
-          <Link to="/fees" style={{ color: 'var(--primary)', textDecoration: 'none' }}>View Details</Link>
-        </div>
-      </div>
-      
-      <div style={cardStyle}>
-        <h3>Recent Notices</h3>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {data.recentNotices && data.recentNotices.map((n, i) => (
-            <li key={i} style={{ padding: '1rem 0', borderBottom: '1px solid var(--border-color)' }}>
-              <strong>{n.title}</strong> - {new Date(n.date).toLocaleDateString()}
-            </li>
-          ))}
-          {(!data.recentNotices || data.recentNotices.length === 0) && <li style={{ color: 'var(--text-light)' }}>No notices.</li>}
-        </ul>
-      </div>
-    </div>
-  );
-};
-export default StudentDashboard;
+    );
+
+    const { student, room, latestLeaveStatus, feeStatus, recentNotices = [] } = data;
+
+    return (
+        <>
+            {/* Page header */}
+            <div className="hh-page-title">Welcome back, {student?.name || user?.email} 👋</div>
+            <div className="hh-page-sub">Here's a quick overview of your hostel life.</div>
+
+            {/* Stat row */}
+            <div className="row g-3 mb-4">
+                {/* Room card */}
+                <div className="col-md-4">
+                    <div className="hh-stat h-100">
+                        <div className="hh-stat-icon teal"><i className="bi bi-door-closed" /></div>
+                        <div>
+                            <div className="hh-stat-label">My Room</div>
+                            {room
+                                ? <div className="hh-stat-val">{room.room_number}</div>
+                                : <div className="hh-stat-val" style={{fontSize:'1rem', color:'#94a3b8'}}>Not Allocated</div>
+                            }
+                            {room && <div className="hh-stat-sub">Floor {room.floor} · Block {room.block}</div>}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Leave card */}
+                <div className="col-md-4">
+                    <div className="hh-stat h-100">
+                        <div className="hh-stat-icon blue"><i className="bi bi-calendar-event" /></div>
+                        <div>
+                            <div className="hh-stat-label">Latest Leave</div>
+                            <div className="mt-1">
+                                <StatusBadge status={latestLeaveStatus || 'None'} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fee card */}
+                <div className="col-md-4">
+                    <div className="hh-stat h-100">
+                        <div className="hh-stat-icon amber"><i className="bi bi-cash-coin" /></div>
+                        <div>
+                            <div className="hh-stat-label">Fee Status</div>
+                            {feeStatus
+                                ? <>
+                                    <div className="mt-1"><StatusBadge status={feeStatus.status} /></div>
+                                    <div className="hh-stat-sub mt-1">Remaining: ₹{feeStatus.remaining}</div>
+                                  </>
+                                : <div className="hh-stat-sub mt-1">No fee records</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Quick actions */}
+            <div className="hh-card mb-4">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-lightning me-2 text-warning" />Quick Actions</span>
+                </div>
+                <div className="hh-card-body d-flex gap-2 flex-wrap">
+                    <Link to="/student/leaves"     className="btn btn-primary btn-sm"><i className="bi bi-calendar-event me-1" />Submit Leave</Link>
+                    <Link to="/student/complaints" className="btn btn-outline-primary btn-sm"><i className="bi bi-tools me-1" />Raise Complaint</Link>
+                    <Link to="/student/visitors"   className="btn btn-outline-primary btn-sm"><i className="bi bi-people me-1" />Register Visitor</Link>
+                    <Link to="/student/notices"    className="btn btn-outline-secondary btn-sm"><i className="bi bi-megaphone me-1" />View Notices</Link>
+                    <Link to="/student/mess"       className="btn btn-outline-secondary btn-sm"><i className="bi bi-cup-hot me-1" />Mess Menu</Link>
+                </div>
+            </div>
+
+            {/* Recent notices */}
+            <div className="hh-card">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-megaphone me-2" />Recent Notices</span>
+                    <Link to="/student/notices" className="btn btn-sm btn-outline-secondary">
+                        View All <i className="bi bi-arrow-right ms-1" />
+                    </Link>
+                </div>
+                <div className="hh-card-body p-0">
+                    {recentNotices.length === 0
+                        ? <div className="px-4 py-3 text-muted small">No notices yet.</div>
+                        : recentNotices.map(n => (
+                            <div key={n.notice_id} className="d-flex justify-content-between align-items-center px-4 py-3 border-bottom" style={{gap:'1rem'}}>
+                                <span className="fw-semibold" style={{fontSize:'0.88rem'}}>{n.title}</span>
+                                <span className="hh-badge hh-badge-default flex-shrink-0">
+                                    <i className="bi bi-calendar3" style={{fontSize:'0.7rem'}} />
+                                    {new Date(n.created_at || n.date).toLocaleDateString()}
+                                </span>
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+        </>
+    );
+}

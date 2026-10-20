@@ -314,7 +314,8 @@ async function getMessMenu(req, res) {
 	try {
 		let rows = [];
 		try {
-			[rows] = await db.query('SELECT * FROM mess_menu ORDER BY FIELD(day_of_week,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"), meal_type');
+			[rows] = await db.query(`SELECT * FROM mess_menu
+				ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), meal_type`);
 		} catch (err) {
 			if (err.code !== 'ER_NO_SUCH_TABLE') throw err;
 		}

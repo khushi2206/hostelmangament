@@ -1,6 +1,6 @@
-﻿require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const bcrypt = require('bcrypt');
 const db = require('./config/db');
 
@@ -10,7 +10,8 @@ async function ensureSchema() {
     const statements = sql
         .split(';')
         .map(part => part.trim())
-        .filter(part => part && !part.startsWith('--'));
+        .filter(part => part && !part.startsWith('--'))
+        .filter(part => !/^CREATE DATABASE\b/i.test(part) && !/^USE\b/i.test(part));
     for (const statement of statements) {
         await db.query(statement);
     }

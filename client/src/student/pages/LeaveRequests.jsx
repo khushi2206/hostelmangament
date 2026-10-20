@@ -2,103 +2,118 @@ import React, { useEffect, useState } from 'react';
 import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
-const LeaveRequests = () => {
-  const [leaves, setLeaves] = useState([]);
-  const [formData, setFormData] = useState({ leave_type: '', from_date: '', to_date: '', reason: '' });
-  const [successMsg, setSuccessMsg] = useState('');
+export default function LeaveRequests() {
+    const [leaves,   setLeaves]  = useState([]);
+    const [form,     setForm]    = useState({ leave_type: 'Outing', from_date: '', to_date: '', reason: '' });
+    const [success,  setSuccess] = useState('');
+    const [error,    setError]   = useState('');
+    const [saving,   setSaving]  = useState(false);
 
-  const fetchLeaves = () => axiosClient.get('/student/leaves').then(res => setLeaves(res.data)).catch(console.error);
-  
-  useEffect(() => { fetchLeaves(); }, []);
+    const load = () => axiosClient.get('/student/leaves').then(r => setLeaves(r.data)).catch(console.error);
+    useEffect(() => { load(); }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axiosClient.post('/student/leaves', formData);
-      setFormData({ leave_type: '', from_date: '', to_date: '', reason: '' });
-      fetchLeaves();
-      setSuccessMsg('Leave request submitted successfully!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch(err) { alert('Error submitting leave'); }
-  };
+    async function submit(e) {
+        e.preventDefault(); setError('');
+        try {
+            setSaving(true);
+            await axiosClient.post('/student/leaves', form);
+            setForm({ leave_type: 'Outing', from_date: '', to_date: '', reason: '' });
+            load();
+            setSuccess('Leave request submitted!');
+            setTimeout(() => setSuccess(''), 4000);
+        } catch (err) { setError(err.response?.data?.message || 'Failed to submit.'); }
+        finally { setSaving(false); }
+    }
 
-  const cancelLeave = async (id) => {
-    try {
-      await axiosClient.delete(`/student/leaves/${id}`);
-      fetchLeaves();
-    } catch(err) { alert('Cannot cancel this leave'); }
-  };
+    async function cancel(id) {
+        if (!window.confirm('Cancel this leave request?')) return;
+        try {
+            await axiosClient.delete(`/student/leaves/${id}`);
+            load();
+        } catch (err) { setError(err.response?.data?.message || 'Cannot cancel.'); }
+    }
 
-  const inputStyle = { width: '100%', padding: '0.75rem', marginBottom: '1rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '1rem' };
+    return (
+        <>
+            <div className="hh-page-title">Leave Requests</div>
+            <div className="hh-page-sub">Apply for leave and track your request status.</div>
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', height: '100%' }}>
-      <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-        <h2 style={{ marginTop: 0, marginBottom: '1.5rem', color: 'var(--primary)' }}>Submit Leave Request</h2>
-        {successMsg && <div style={{ background: '#d1fae5', color: '#065f46', padding: '1rem', borderRadius: '4px', marginBottom: '1rem' }}>{successMsg}</div>}
-        
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Leave Type</label>
-            <select style={inputStyle} value={formData.leave_type} onChange={e => setFormData({...formData, leave_type: e.target.value})} required>
-              <option value="">Select Type</option>
-              <option value="Home Leave">Home Leave</option>
-              <option value="Medical Leave">Medical Leave</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>From Date</label>
-            <input type="date" style={inputStyle} value={formData.from_date} onChange={e => setFormData({...formData, from_date: e.target.value})} required />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>To Date</label>
-            <input type="date" style={inputStyle} value={formData.to_date} onChange={e => setFormData({...formData, to_date: e.target.value})} required />
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Reason</label>
-            <textarea style={{...inputStyle, height: '80px'}} value={formData.reason} onChange={e => setFormData({...formData, reason: e.target.value})} required />
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <button type="submit" style={{ padding: '0.75rem 2rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1rem', fontWeight: 500 }}>Submit Request</button>
-          </div>
-        </form>
-      </div>
+            {/* Form */}
+            <div className="hh-card mb-4">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-plus-circle me-2 text-primary" />New Leave Request</span>
+                </div>
+                <div className="hh-card-body">
+                    {success && <div className="hh-alert-success mb-3"><i className="bi bi-check-circle me-2" />{success}</div>}
+                    {error   && <div className="hh-alert-danger  mb-3"><i className="bi bi-exclamation-circle me-2" />{error}</div>}
+                    <form onSubmit={submit} className="row g-3">
+                        <div className="col-md-4">
+                            <label className="hh-form-label">Leave Type</label>
+                            <select className="form-select" value={form.leave_type}
+                                onChange={e => setForm({...form, leave_type: e.target.value})} required>
+                                <option value="Outing">Outing</option>
+                                <option value="Home Leave">Home Leave</option>
+                            </select>
+                        </div>
+                        <div className="col-md-4">
+                            <label className="hh-form-label">From Date</label>
+                            <input type="date" className="form-control" value={form.from_date}
+                                onChange={e => setForm({...form, from_date: e.target.value})} required />
+                        </div>
+                        <div className="col-md-4">
+                            <label className="hh-form-label">To Date</label>
+                            <input type="date" className="form-control" value={form.to_date}
+                                onChange={e => setForm({...form, to_date: e.target.value})} required />
+                        </div>
+                        <div className="col-12">
+                            <label className="hh-form-label">Reason</label>
+                            <textarea className="form-control" rows="2" value={form.reason}
+                                onChange={e => setForm({...form, reason: e.target.value})}
+                                placeholder="Briefly describe your reason…" required />
+                        </div>
+                        <div className="col-12">
+                            <button type="submit" className="btn btn-primary" disabled={saving}>
+                                {saving ? <><span className="spinner-border spinner-border-sm me-2" />Submitting…</> : <><i className="bi bi-send me-2" />Submit Request</>}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-      <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', flex: 1 }}>
-        <h2 style={{ marginTop: 0, marginBottom: '1.5rem', color: 'var(--text-dark)' }}>Leave History</h2>
-        {leaves.length === 0 ? <p style={{ color: 'var(--text-light)' }}>No leave requests found.</p> : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-color)', borderBottom: '2px solid var(--border-color)' }}>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>Type</th>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>From</th>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>To</th>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>Reason</th>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '1rem', fontWeight: 600 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaves.map((l) => (
-                  <tr key={l.leave_id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem' }}>{l.leave_type}</td>
-                    <td style={{ padding: '1rem' }}>{new Date(l.from_date).toLocaleDateString()}</td>
-                    <td style={{ padding: '1rem' }}>{new Date(l.to_date).toLocaleDateString()}</td>
-                    <td style={{ padding: '1rem', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.reason}</td>
-                    <td style={{ padding: '1rem' }}><StatusBadge status={l.status} /></td>
-                    <td style={{ padding: '1rem' }}>
-                      {l.status === 'Pending' && <button onClick={() => cancelLeave(l.leave_id)} style={{ background: 'var(--danger)', color: 'white', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.875rem' }}>Cancel</button>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-export default LeaveRequests;
+            {/* History table */}
+            <div className="hh-card">
+                <div className="hh-card-header">
+                    <span className="hh-card-title"><i className="bi bi-clock-history me-2" />Leave History</span>
+                    <span className="hh-badge hh-badge-default">{leaves.length} records</span>
+                </div>
+                <div className="table-responsive">
+                    <table className="hh-table">
+                        <thead>
+                            <tr><th>Type</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Admin Note</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {leaves.length === 0
+                                ? <tr><td colSpan="7" className="text-center text-muted py-4">No leave requests yet.</td></tr>
+                                : leaves.map(l => (
+                                    <tr key={l.leave_id}>
+                                        <td className="fw-semibold">{l.leave_type}</td>
+                                        <td>{new Date(l.from_date).toLocaleDateString()}</td>
+                                        <td>{new Date(l.to_date).toLocaleDateString()}</td>
+                                        <td style={{maxWidth:'200px'}} className="text-truncate">{l.reason}</td>
+                                        <td><StatusBadge status={l.status} /></td>
+                                        <td className="text-muted small">{l.admin_comment || '—'}</td>
+                                        <td>
+                                            {l.status === 'Pending' &&
+                                                <button onClick={() => cancel(l.leave_id)}
+                                                    className="btn btn-sm btn-outline-danger">Cancel</button>}
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </>
+    );
+}

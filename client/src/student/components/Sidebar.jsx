@@ -1,26 +1,25 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, DoorClosed, Calendar, Users, AlertCircle, CreditCard, Bell, Utensils, Search, Shirt } from 'lucide-react';
 
 const Sidebar = () => {
-  const navStyle = {
-    display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', background: 'white', width: '250px', minHeight: 'calc(100vh - 64px)', borderRight: '1px solid var(--border-color)'
-  };
-  const linkStyle = { textDecoration: 'none', color: 'var(--text-dark)', padding: '0.75rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '0.75rem' };
-  
+  const linkClass = ({ isActive }) =>
+    `nav-link d-flex align-items-center gap-3 py-2 px-3 rounded ${isActive ? 'bg-primary text-white' : 'text-dark'}`;
+
   return (
-    <div style={navStyle}>
-      <NavLink to="/" end style={linkStyle}><Home size={20}/> Dashboard</NavLink>
-      <NavLink to="/profile" style={linkStyle}><User size={20}/> Profile</NavLink>
-      <NavLink to="/room" style={linkStyle}><DoorClosed size={20}/> My Room</NavLink>
-      <NavLink to="/mess" style={linkStyle}><Utensils size={20}/> Mess Menu</NavLink>
-      <NavLink to="/laundry" style={linkStyle}><Shirt size={20}/> Laundry</NavLink>
-      <NavLink to="/leaves" style={linkStyle}><Calendar size={20}/> Leaves</NavLink>
-      <NavLink to="/visitors" style={linkStyle}><Users size={20}/> Visitors</NavLink>
-      <NavLink to="/complaints" style={linkStyle}><AlertCircle size={20}/> Complaints</NavLink>
-      <NavLink to="/lost-found" style={linkStyle}><Search size={20}/> Lost & Found</NavLink>
-      <NavLink to="/fees" style={linkStyle}><CreditCard size={20}/> Fees</NavLink>
-      <NavLink to="/notices" style={linkStyle}><Bell size={20}/> Notices</NavLink>
+    <div className="bg-white border-end shadow-sm" style={{ width: '250px', minHeight: 'calc(100vh - 56px)' }}>
+      <div className="nav flex-column nav-pills p-3 gap-1">
+        <NavLink to="/student" className={linkClass} end><i className="bi bi-speedometer2" /> Dashboard</NavLink>
+        <NavLink to="/student/profile" className={linkClass}><i className="bi bi-person" /> Profile</NavLink>
+        <NavLink to="/student/room" className={linkClass}><i className="bi bi-door-closed" /> My Room</NavLink>
+        <NavLink to="/student/mess" className={linkClass}><i className="bi bi-cup-hot" /> Mess Menu</NavLink>
+        <NavLink to="/student/laundry" className={linkClass}><i className="bi bi-bag" /> Laundry</NavLink>
+        <NavLink to="/student/leaves" className={linkClass}><i className="bi bi-calendar-event" /> Leaves</NavLink>
+        <NavLink to="/student/visitors" className={linkClass}><i className="bi bi-people" /> Visitors</NavLink>
+        <NavLink to="/student/complaints" className={linkClass}><i className="bi bi-tools" /> Complaints</NavLink>
+        <NavLink to="/student/lost-found" className={linkClass}><i className="bi bi-search" /> Lost &amp; Found</NavLink>
+        <NavLink to="/student/fees" className={linkClass}><i className="bi bi-cash-coin" /> Fees</NavLink>
+        <NavLink to="/student/notices" className={linkClass}><i className="bi bi-megaphone" /> Notices</NavLink>
+      </div>
     </div>
   );
 };

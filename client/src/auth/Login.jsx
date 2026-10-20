@@ -45,17 +45,18 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                        <label className="hh-form-label">Email Address</label>
+                        <label className="hh-form-label">Email or Enrollment Number</label>
                         <div className="input-group">
                             <span className="input-group-text bg-light border-end-0">
                                 <i className="bi bi-envelope text-muted" />
                             </span>
                             <input
-                                type="email"
+                                type="text"
+                                autoComplete="username"
                                 className="form-control border-start-0 ps-0"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                placeholder="your@email.com"
+                                placeholder="Email or enrollment number"
                                 required
                                 autoFocus
                             />
