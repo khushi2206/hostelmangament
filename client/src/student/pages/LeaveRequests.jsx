@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const LeaveRequests = () => {
@@ -7,14 +7,14 @@ const LeaveRequests = () => {
   const [formData, setFormData] = useState({ leave_type: '', from_date: '', to_date: '', reason: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchLeaves = () => axios.get('http://localhost:5000/api/student/leaves').then(res => setLeaves(res.data)).catch(console.error);
+  const fetchLeaves = () => axiosClient.get('/student/leaves').then(res => setLeaves(res.data)).catch(console.error);
   
   useEffect(() => { fetchLeaves(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/leaves', formData);
+      await axiosClient.post('/student/leaves', formData);
       setFormData({ leave_type: '', from_date: '', to_date: '', reason: '' });
       fetchLeaves();
       setSuccessMsg('Leave request submitted successfully!');
@@ -24,7 +24,7 @@ const LeaveRequests = () => {
 
   const cancelLeave = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/student/leaves/${id}`);
+      await axiosClient.delete(`/student/leaves/${id}`);
       fetchLeaves();
     } catch(err) { alert('Cannot cancel this leave'); }
   };

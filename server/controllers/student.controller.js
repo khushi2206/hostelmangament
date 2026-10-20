@@ -61,7 +61,7 @@ async function getDashboard(req, res) {
 
 		// Fee status
 		const [feeRows] = await db.query(
-			'SELECT status, amount, paid_amount, remaining_amount FROM fees WHERE student_id = ? ORDER BY created_at DESC LIMIT 1',
+			"SELECT CASE WHEN paid >= amount THEN 'Paid' WHEN paid > 0 THEN 'Partial' ELSE 'Due' END AS status, amount, paid AS paid_amount, GREATEST(amount - paid, 0) AS remaining_amount FROM fees WHERE student_id = ? ORDER BY created_at DESC LIMIT 1",
 			[profile.student_id]
 		).catch(() => [[]]);
 		const feeStatus = feeRows[0] ? {
@@ -285,7 +285,7 @@ async function getStudentFees(req, res) {
 		let rows = [];
 		try {
 			[rows] = await db.query(
-				'SELECT fee_id, amount, paid_amount, remaining_amount, payment_date, status FROM fees WHERE student_id = ? ORDER BY created_at DESC',
+				"SELECT fee_id, amount, paid AS paid_amount, GREATEST(amount - paid, 0) AS remaining_amount, NULL AS payment_date, CASE WHEN paid >= amount THEN 'Paid' WHEN paid > 0 THEN 'Partial' ELSE 'Due' END AS status FROM fees WHERE student_id = ? ORDER BY created_at DESC",
 				[profile.student_id]
 			);
 		} catch (err) {

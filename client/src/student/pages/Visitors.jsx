@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const Visitors = () => {
@@ -7,14 +7,14 @@ const Visitors = () => {
   const [formData, setFormData] = useState({ visitor_name: '', relation: '', phone: '', visit_date: '', visit_time: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchVisitors = () => axios.get('http://localhost:5000/api/student/visitors').then(res => setVisitors(res.data)).catch(console.error);
+  const fetchVisitors = () => axiosClient.get('/student/visitors').then(res => setVisitors(res.data)).catch(console.error);
   
   useEffect(() => { fetchVisitors(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/visitors', formData);
+      await axiosClient.post('/student/visitors', formData);
       setFormData({ visitor_name: '', relation: '', phone: '', visit_date: '', visit_time: '' });
       fetchVisitors();
       setSuccessMsg('Visitor registered successfully!');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const Complaints = () => {
@@ -7,14 +7,14 @@ const Complaints = () => {
   const [formData, setFormData] = useState({ category: '', description: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchComplaints = () => axios.get('http://localhost:5000/api/student/complaints').then(res => setComplaints(res.data)).catch(console.error);
+  const fetchComplaints = () => axiosClient.get('/student/complaints').then(res => setComplaints(res.data)).catch(console.error);
   
   useEffect(() => { fetchComplaints(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/complaints', formData);
+      await axiosClient.post('/student/complaints', formData);
       setFormData({ category: '', description: '' });
       fetchComplaints();
       setSuccessMsg('Complaint submitted successfully!');

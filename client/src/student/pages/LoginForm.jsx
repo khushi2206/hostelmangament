@@ -28,7 +28,7 @@ const LoginForm = () => {
         <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary)' }}>HostelHub Login</h2>
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email / Enrollment No</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+          <input type="text" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
         </div>
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>

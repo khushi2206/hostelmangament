@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const Fees = () => {
   const [fees, setFees] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/student/fees').then(res => setFees(res.data)).catch(console.error);
+    axiosClient.get('/student/fees').then(res => setFees(res.data)).catch(console.error);
   }, []);
 
   return (

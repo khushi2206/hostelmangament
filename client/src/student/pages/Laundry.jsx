@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const Laundry = () => {
@@ -7,14 +7,14 @@ const Laundry = () => {
   const [clothesCount, setClothesCount] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchLaundry = () => axios.get('http://localhost:5000/api/student/laundry').then(res => setRequests(res.data)).catch(console.error);
+  const fetchLaundry = () => axiosClient.get('/student/laundry').then(res => setRequests(res.data)).catch(console.error);
   
   useEffect(() => { fetchLaundry(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/laundry', { clothes_count: clothesCount });
+      await axiosClient.post('/student/laundry', { clothes_count: clothesCount });
       setClothesCount('');
       fetchLaundry();
       setSuccessMsg('Laundry request sent successfully!');

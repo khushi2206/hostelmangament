@@ -1,4 +1,4 @@
-﻿CREATE DATABASE IF NOT EXISTS hostelhub;
+CREATE DATABASE IF NOT EXISTS hostelhub;
 USE hostelhub;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -93,4 +93,54 @@ CREATE TABLE IF NOT EXISTS notices (
 	description TEXT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS room_change_requests (
+	request_id INT AUTO_INCREMENT PRIMARY KEY,
+	student_id INT NOT NULL,
+	reason TEXT NOT NULL,
+	status ENUM('Pending', 'Approved', 'Rejected') NOT NULL DEFAULT 'Pending',
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mess_menu (
+	menu_id INT AUTO_INCREMENT PRIMARY KEY,
+	day_of_week ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
+	meal_type ENUM('Breakfast', 'Lunch', 'Dinner') NOT NULL,
+	items TEXT NOT NULL,
+	UNIQUE KEY unique_menu_meal (day_of_week, meal_type)
+);
+
+CREATE TABLE IF NOT EXISTS mess_opt_outs (
+	opt_id INT AUTO_INCREMENT PRIMARY KEY,
+	student_id INT NOT NULL,
+	opt_date DATE NOT NULL,
+	meal_type ENUM('Breakfast', 'Lunch', 'Dinner') NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE KEY unique_student_opt_out (student_id, opt_date, meal_type),
+	FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS lost_found (
+	item_id INT AUTO_INCREMENT PRIMARY KEY,
+	student_id INT NOT NULL,
+	type ENUM('Lost', 'Found') NOT NULL,
+	item_name VARCHAR(150) NOT NULL,
+	description TEXT NOT NULL,
+	location VARCHAR(200),
+	status VARCHAR(30) NOT NULL DEFAULT 'Open',
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS laundry (
+	laundry_id INT AUTO_INCREMENT PRIMARY KEY,
+	student_id INT NOT NULL,
+	clothes_count INT NOT NULL,
+	request_date DATE NOT NULL,
+	status ENUM('Pending', 'Collected', 'Completed') NOT NULL DEFAULT 'Pending',
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CHECK (clothes_count > 0),
+	FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
 );

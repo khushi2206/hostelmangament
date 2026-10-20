@@ -1,35 +1,27 @@
-import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState } from 'react';
+import axiosClient from '../api/axiosClient';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser({ token });
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      setUser(null);
-    }
-    setLoading(false);
-  }, [token]);
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('hostelhub_user') || 'null'); }
+    catch { return null; }
+  });
+  const [loading] = useState(false);
 
   const login = async (email, password) => {
-    const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
-    setToken(res.data.token);
-    setUser({ role: res.data.role, ...res.data.student });
-    return res.data;
+    const response = await axiosClient.post('/auth/login', { email, password });
+    localStorage.setItem('hostelhub_token', response.data.token);
+    localStorage.setItem('hostelhub_user', JSON.stringify(response.data.user));
+    setUser(response.data.user);
+    return response.data.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
+  const logout = async () => {
+    try { await axiosClient.post('/auth/logout'); } catch (error) { console.error(error); }
+    localStorage.removeItem('hostelhub_token');
+    localStorage.removeItem('hostelhub_user');
     setUser(null);
   };
 

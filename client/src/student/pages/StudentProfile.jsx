@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -8,7 +8,7 @@ const StudentProfile = () => {
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/student/profile').then(res => {
+    axiosClient.get('/student/profile').then(res => {
       setProfile(res.data);
       setFormData({ phone: res.data.phone, address: res.data.address, emergency_contact: res.data.emergency_contact });
     }).catch(console.error);
@@ -17,7 +17,7 @@ const StudentProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.put('http://localhost:5000/api/student/profile', formData);
+      const res = await axiosClient.put('/student/profile', formData);
       setProfile(res.data);
       setEditMode(false);
       setSuccessMsg('Profile updated successfully!');

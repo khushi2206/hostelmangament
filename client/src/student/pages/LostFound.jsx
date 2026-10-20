@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const LostFound = () => {
@@ -7,14 +7,14 @@ const LostFound = () => {
   const [formData, setFormData] = useState({ type: 'Lost', item_name: '', description: '', location: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchItems = () => axios.get('http://localhost:5000/api/student/lost-found').then(res => setItems(res.data)).catch(console.error);
+  const fetchItems = () => axiosClient.get('/student/lost-found').then(res => setItems(res.data)).catch(console.error);
   
   useEffect(() => { fetchItems(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/lost-found', formData);
+      await axiosClient.post('/student/lost-found', formData);
       setFormData({ type: 'Lost', item_name: '', description: '', location: '' });
       fetchItems();
       setSuccessMsg('Report submitted successfully!');

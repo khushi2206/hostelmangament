@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 import { Link } from 'react-router-dom';
 
@@ -7,7 +7,7 @@ const StudentDashboard = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/student/dashboard').then(res => setData(res.data)).catch(console.error);
+    axiosClient.get('/student/dashboard').then(res => setData(res.data)).catch(console.error);
   }, []);
 
   if (!data) return <div>Loading...</div>;

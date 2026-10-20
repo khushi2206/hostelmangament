@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import StatusBadge from '../components/StatusBadge';
 
 const MyRoom = () => {
@@ -8,15 +8,15 @@ const MyRoom = () => {
   const [reason, setReason] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchRoom = () => axios.get('http://localhost:5000/api/student/room').then(res => setData(res.data)).catch(console.error);
-  const fetchChanges = () => axios.get('http://localhost:5000/api/student/room-change').then(res => setChanges(res.data)).catch(console.error);
+  const fetchRoom = () => axiosClient.get('/student/room').then(res => setData(res.data)).catch(console.error);
+  const fetchChanges = () => axiosClient.get('/student/room-change').then(res => setChanges(res.data)).catch(console.error);
 
   useEffect(() => { fetchRoom(); fetchChanges(); }, []);
 
   const handleRequestChange = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/room-change', { reason });
+      await axiosClient.post('/student/room-change', { reason });
       setReason('');
       fetchChanges();
       setSuccessMsg('Room change requested successfully!');

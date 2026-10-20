@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
 const Notices = () => {
   const [notices, setNotices] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/student/notices').then(res => setNotices(res.data)).catch(console.error);
+    axiosClient.get('/student/notices').then(res => setNotices(res.data)).catch(console.error);
   }, []);
 
   return (

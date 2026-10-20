@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 
 const MessMenu = () => {
   const [menu, setMenu] = useState([]);
@@ -7,15 +7,15 @@ const MessMenu = () => {
   const [optData, setOptData] = useState({ opt_date: '', meal_type: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
-  const fetchMenu = () => axios.get('http://localhost:5000/api/student/mess/menu').then(res => setMenu(res.data)).catch(console.error);
-  const fetchOptOuts = () => axios.get('http://localhost:5000/api/student/mess/opt-out').then(res => setOptOuts(res.data)).catch(console.error);
+  const fetchMenu = () => axiosClient.get('/student/mess/menu').then(res => setMenu(res.data)).catch(console.error);
+  const fetchOptOuts = () => axiosClient.get('/student/mess/opt-out').then(res => setOptOuts(res.data)).catch(console.error);
   
   useEffect(() => { fetchMenu(); fetchOptOuts(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/student/mess/opt-out', optData);
+      await axiosClient.post('/student/mess/opt-out', optData);
       setOptData({ opt_date: '', meal_type: '' });
       fetchOptOuts();
       setSuccessMsg('Successfully opted out of meal!');
