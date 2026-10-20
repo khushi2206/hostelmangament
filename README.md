@@ -58,3 +58,7 @@ Vercel deploys the Express app from the repository root. The MySQL database must
 4. Deploy. Check `/api/health` on the Vercel URL; it should report that the database is connected.
 
 The project uses signed 12-hour session tokens so API sign-in works across Vercel function instances. Set the same `SESSION_SECRET` in every deployment environment where users should remain signed in.
+
+## Deploy to Render
+
+The root `render.yaml` configures one Node web service for the Express app. Render does not provide a managed MySQL database, so create one with an external MySQL provider first. In Render, create a Blueprint from this repository's `main` branch and supply the hosted database values when prompted. Render generates `SESSION_SECRET` automatically. Set the hosted DB values and `ADMIN_EMAIL` / `ADMIN_PASSWORD` in your local ignored `server/.env`, then run `npm run setup-db` and `npm run seed` from the repository root to initialize that database. The service health check is `/api/health`.
