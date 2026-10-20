@@ -1,40 +1,60 @@
-# HostelHub
+# Hostel Hub
 
-HostelHub is a React/Vite client with an Express API and MySQL database.
+Hostel Hub is a hostel management website. Express serves the HTML, CSS, and JavaScript frontend and provides the API. MySQL stores user and hostel data.
 
-## Prerequisites
+## Run the project
 
-- Node.js 18 or newer
-- MySQL 8 or a compatible MySQL server
+Requirements: Node.js 20+ and MySQL 8 (or compatible).
 
-## Configure and start
-
-1. Check the values in `server/.env` and set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `JWT_SECRET` for your MySQL setup.
-2. Create the database tables from the project root:
+1. Set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `server/.env`.
+2. From PowerShell:
 
    ```powershell
-   cd server
+   cd D:\sem5\FSD\project\server
    npm install
    node setup_db.js
    npm run seed
-   ```
-
-   `npm run seed` creates the initial admin account `admin@hostelhub.com` with password `admin123` (and resets that account's password if it already exists). You can add student accounts from the admin portal. `npm run seed:demo` is optional and **deletes existing application data** before loading demo data; use it only on a database you are willing to reset.
-3. In another terminal, start the API:
-
-   ```powershell
-   cd server
-   npm start
-   ```
-
-4. In a third terminal, start the client:
-
-   ```powershell
-   cd client
+   cd ..\client
    npm install
    npm run dev
    ```
 
-Open the URL printed by Vite. Its `/api` requests are proxied to the API at `http://localhost:5000`. Set `VITE_API_PROXY_TARGET` if the API runs elsewhere. `GET http://localhost:5000/api/health` reports whether both the API and MySQL are reachable.
+3. Open [http://localhost:5000](http://localhost:5000). Check the API and database at [http://localhost:5000/api/health](http://localhost:5000/api/health).
 
-For a production client build, run `npm run build` from `client`.
+Express serves the files in `public` directly. No frontend build step is needed.
+
+The server uses `PORT` from `server/.env` and defaults to `5000`. Change that value to any available port if needed.
+
+You can run the dev server from either folder. In `server`, use `npm run dev`; in `client`, use `npm run dev` to forward to the server. Both print the local URL in the terminal, for example `Local: http://localhost:5000/`.
+
+`npm run seed` creates or updates the admin login to `admin@hostelhub.com` / `admin123`. Use this local starter account to sign in, then add student accounts in the admin portal. `setup_db.js` creates missing tables and adds columns needed by newer code while keeping existing rows. The project does not include a demo-data or database-reset command.
+
+
+## Project map
+
+```text
+public/                 HTML, CSS, and browser JavaScript served by Express/Vercel
+index.js                Express entry point used by Vercel
+server/server.js        Express app, API routes, and static file hosting
+server/controllers/     Input checks and feature operations
+server/routes/          URL to operation mapping
+server/config/db.js     MySQL connection
+database/schema.sql     Tables and relationships
+```
+
+## Viva explanation
+
+The browser loads one HTML page. `app.js` shows the selected admin or student screen and sends form data with Fetch to Express. Express checks the signed-in user's role and runs parameterized MySQL queries. Passwords are hashed before they are stored. Bootstrap supplies common controls and icons; `theme.css` provides one shared teal-and-black style for both portals, using horizontal cards for records.
+
+The admin portal manages students, rooms and allocations, leaves, visitors, complaints, fees, and notices. The student portal includes dashboard, profile, room, leaves, visitors, complaints, fees, notices, mess, laundry, and lost-and-found.
+
+## Deploy to Vercel
+
+Vercel deploys the Express app from the repository root. The MySQL database must be hosted somewhere reachable from Vercel; a local MySQL server is not reachable by the deployed app.
+
+1. Create a hosted MySQL database, push the repository to GitHub, and import it into Vercel with the repository root as the Root Directory.
+2. Add `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` under the Vercel project's Environment Variables. Add a long random `SESSION_SECRET` too. Do not add `server/.env` to Git or paste secrets into source files.
+3. Put the hosted database connection values plus `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your local ignored `server/.env`. Run `npm run setup-db` and `npm run seed` from the repository root once to create the schema and admin account in the hosted database.
+4. Deploy. Check `/api/health` on the Vercel URL; it should report that the database is connected.
+
+The project uses signed 12-hour session tokens so API sign-in works across Vercel function instances. Set the same `SESSION_SECRET` in every deployment environment where users should remain signed in.

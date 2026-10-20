@@ -23,10 +23,19 @@ async function updateProfile(req, res) {
 	try {
 		const profile = await studentModel.getStudentByUserId(req.user.user_id);
 		if (!profile) return res.status(404).json({ message: 'Student profile not found' });
-		const { phone, address, emergency_contact } = req.body;
+		const { name, enrollment_no, course, semester, department, dob, phone, address, emergency_contact } = req.body;
+		if (![name, enrollment_no, course, semester, department].every(value => typeof value === 'string' && value.trim())) {
+			return res.status(400).json({ message: 'Name, enrollment number, course, semester, and department are required' });
+		}
+		if (name.trim().length < 2 || !/^[A-Za-z\s.'-]+$/.test(name.trim())) return res.status(400).json({ message: 'Enter a valid name' });
+		if (!/^[A-Za-z0-9/-]{3,30}$/.test(enrollment_no.trim())) return res.status(400).json({ message: 'Enrollment number must be 3-30 letters, numbers, / or -' });
+		const semesterNumber = Number(semester);
+		if (!Number.isInteger(semesterNumber) || semesterNumber < 1 || semesterNumber > 12) return res.status(400).json({ message: 'Semester must be between 1 and 12' });
+		if (await studentModel.findByEnrollment(enrollment_no.trim(), profile.student_id)) return res.status(409).json({ message: 'Enrollment number already exists' });
+		if (dob && !isValidDate(dob)) return res.status(400).json({ message: 'Enter a valid date of birth' });
 		await db.query(
-			'UPDATE students SET phone = ?, address = ?, emergency_contact = ? WHERE student_id = ?',
-			[phone || null, address || null, emergency_contact || null, profile.student_id]
+			'UPDATE students SET name = ?, enrollment_no = ?, course = ?, semester = ?, department = ?, dob = ?, phone = ?, address = ?, emergency_contact = ? WHERE student_id = ?',
+			[name.trim(), enrollment_no.trim(), course.trim(), semesterNumber, department.trim(), dob || null, phone || null, address || null, emergency_contact || null, profile.student_id]
 		);
 		const updated = await studentModel.getStudentByUserId(req.user.user_id);
 		res.json(updated);

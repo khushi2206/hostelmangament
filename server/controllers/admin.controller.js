@@ -3,29 +3,13 @@ const db = require('../config/db');
 const studentModel = require('../models/student.model');
 
 function validateStudent(data, creating) {
-	if (!data.name || !data.name.trim() || !data.enrollment_no || !data.enrollment_no.trim() || !data.email || !data.email.trim() || !data.course || !data.course.trim() || !data.department || !data.department.trim()) {
-		return 'Name, enrollment number, email, course, and department are required';
-	}
+	if (!data.name || !data.name.trim() || !data.email || !data.email.trim()) return 'Name and email are required';
 	if (data.name.trim().length < 2) return 'Name must be at least 2 characters long';
 	if (!/^[A-Za-z\s.'-]+$/.test(data.name.trim())) return 'Name can only contain letters, spaces, dots, and hyphens';
-	if (!/^[A-Za-z0-9/-]{3,30}$/.test(data.enrollment_no.trim())) return 'Enrollment number must be 3-30 alphanumeric characters';
 	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) return 'Enter a valid email address';
-	if (creating && (!data.password || data.password.length < 6)) return 'Password is required and must be at least 6 characters long';
-	if (data.password && data.password.length < 6) return 'Password must be at least 6 characters long';
-	if (data.phone && data.phone.trim() && !/^\+?[0-9\s-]{10,15}$/.test(data.phone.trim())) return 'Enter a valid 10 to 15 digit phone number';
-	if (data.emergency_contact && data.emergency_contact.trim() && !/^\+?[0-9\s-]{10,15}$/.test(data.emergency_contact.trim())) return 'Enter a valid 10 to 15 digit emergency contact number';
-	const sem = Number(data.semester);
-	if (!Number.isInteger(sem) || sem < 1 || sem > 12) return 'Semester must be a positive integer between 1 and 12';
-	if (data.dob) {
-		const dobDate = new Date(data.dob);
-		if (Number.isNaN(dobDate.getTime())) return 'Enter a valid date of birth';
-		if (dobDate >= new Date()) return 'Date of birth must be in the past';
-	}
+	if (creating && (typeof data.password !== 'string' || data.password.length < 6)) return 'Password is required and must be at least 6 characters long';
+	if (!creating && data.password && data.password.length < 6) return 'Password must be at least 6 characters long';
 	return null;
-}
-
-function studentValues(data) {
-	return [data.name.trim(), data.phone || null, data.course.trim(), Number(data.semester), data.department.trim(), data.dob || null, data.address || null, data.emergency_contact || null];
 }
 
 async function getStudents(req, res) {
@@ -53,15 +37,12 @@ async function addStudent(req, res) {
 	try {
 		const errorMessage = validateStudent(req.body, true);
 		if (errorMessage) return res.status(400).json({ message: errorMessage });
-		if (await studentModel.findByEnrollment(req.body.enrollment_no)) return res.status(409).json({ message: 'Enrollment number already exists' });
 		if (await studentModel.findUserByEmail(req.body.email)) return res.status(409).json({ message: 'Email already exists' });
 		connection = await db.getConnection();
 		await connection.beginTransaction();
 		const passwordHash = await bcrypt.hash(req.body.password, 10);
 		const [userResult] = await connection.query('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)', [req.body.email.trim(), passwordHash, 'student']);
-		await connection.query(`INSERT INTO students
-			(user_id, enrollment_no, name, phone, course, semester, department, dob, address, emergency_contact)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [userResult.insertId, req.body.enrollment_no.trim(), ...studentValues(req.body)]);
+		await connection.query('INSERT INTO students (user_id, name) VALUES (?, ?)', [userResult.insertId, req.body.name.trim()]);
 		await connection.commit();
 		res.status(201).json({ message: 'Student added successfully' });
 	} catch (error) {
@@ -79,7 +60,6 @@ async function updateStudent(req, res) {
 	try {
 		const student = await studentModel.getStudentById(req.params.id);
 		if (!student) return res.status(404).json({ message: 'Student not found' });
-		if (await studentModel.findByEnrollment(req.body.enrollment_no, req.params.id)) return res.status(409).json({ message: 'Enrollment number already exists' });
 		if (await studentModel.findUserByEmail(req.body.email, req.params.id)) return res.status(409).json({ message: 'Email already exists' });
 		const connection = await db.getConnection();
 		try {
@@ -89,7 +69,7 @@ async function updateStudent(req, res) {
 				const passwordHash = await bcrypt.hash(req.body.password, 10);
 				await connection.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [passwordHash, student.user_id]);
 			}
-			await connection.query(`UPDATE students SET enrollment_no = ?, name = ?, phone = ?, course = ?, semester = ?, department = ?, dob = ?, address = ?, emergency_contact = ? WHERE student_id = ?`, [req.body.enrollment_no.trim(), ...studentValues(req.body), req.params.id]);
+			await connection.query('UPDATE students SET name = ? WHERE student_id = ?', [req.body.name.trim(), req.params.id]);
 			await connection.commit();
 			res.json({ message: 'Student updated successfully' });
 		} catch (error) {

@@ -24,10 +24,10 @@ CREATE TABLE IF NOT EXISTS rooms (
 CREATE TABLE IF NOT EXISTS students (
 	student_id INT AUTO_INCREMENT PRIMARY KEY,
 	user_id INT NOT NULL UNIQUE,
-	enrollment_no VARCHAR(100) NOT NULL UNIQUE,
+	enrollment_no VARCHAR(100) NULL UNIQUE,
 	name VARCHAR(150) NOT NULL,
-	phone VARCHAR(30), course VARCHAR(150) NOT NULL, semester INT NOT NULL,
-	department VARCHAR(150) NOT NULL, dob DATE, address TEXT,
+	phone VARCHAR(30), course VARCHAR(150) NULL, semester INT NULL,
+	department VARCHAR(150) NULL, dob DATE, address TEXT,
 	emergency_contact VARCHAR(30), room_id INT NULL, bed_label VARCHAR(30) NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY unique_room_bed (room_id, bed_label),
